@@ -6,6 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx';
 import { X, User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 
+// ★★★ الخطوة 1: إضافة مستخدم وهمي للتحقق منه ★★★
+// هذا يمثل مستخدمًا مسجلاً في قاعدة بياناتك (بشكل مؤقت)
+const mockUser = {
+  id: 1,
+  email: 'test@example.com',
+  username: 'testuser',
+  password: 'password123' // كلمة المرور التي يجب إدخالها
+};
+
+
 const AuthModal = ({ isOpen, onClose, onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({
@@ -24,30 +34,35 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
 
   if (!isOpen) return null;
 
+  // ★★★ الخطوة 2: تعديل دالة تسجيل الدخول بالكامل ★★★
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
 
-    try {
-      // محاكاة استدعاء API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // محاكاة نجاح تسجيل الدخول
-      const user = {
-        id: 1,
-        username: loginData.identifier,
-        email: 'user@example.com'
+    // محاكاة استدعاء API للتحقق
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // التحقق من صحة البيانات المدخلة مقابل المستخدم الوهمي
+    if (
+      (loginData.identifier === mockUser.email || loginData.identifier === mockUser.username) &&
+      loginData.password === mockUser.password
+    ) {
+      // نجاح: البيانات متطابقة
+      const userToLogin = {
+        id: mockUser.id,
+        username: mockUser.username,
+        email: mockUser.email
       };
-      
-      onLogin(user);
+      onLogin(userToLogin);
       onClose();
       setLoginData({ identifier: '', password: '' });
-    } catch (error) {
-      setErrors({ login: 'خطأ في تسجيل الدخول. تحقق من البيانات المدخلة.' });
-    } finally {
-      setIsLoading(false);
+    } else {
+      // فشل: البيانات غير متطابقة
+      setErrors({ login: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' });
     }
+
+    setIsLoading(false);
   };
 
   const handleSignup = async (e) => {
@@ -55,7 +70,6 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
     setIsLoading(true);
     setErrors({});
 
-    // التحقق من صحة البيانات
     const newErrors = {};
     if (!signupData.username) newErrors.username = 'اسم المستخدم مطلوب';
     if (!signupData.email) newErrors.email = 'البريد الإلكتروني مطلوب';
@@ -72,16 +86,17 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
     }
 
     try {
-      // محاكاة استدعاء API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // محاكاة نجاح إنشاء الحساب
       const user = {
-        id: 1,
+        id: Date.now(), // استخدام timestamp لإنشاء ID فريد مؤقت
         username: signupData.username,
         email: signupData.email
       };
       
+      console.log("تم إنشاء حساب جديد (محاكاة):", user);
+      alert("تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول بالبيانات الجديدة (هذه الميزة للمحاكاة فقط).");
+
       onLogin(user);
       onClose();
       setSignupData({
@@ -131,13 +146,13 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
                 <CardContent>
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="identifier">البريد الإلكتروني أو رقم الهاتف أو اسم المستخدم</Label>
+                      <Label htmlFor="identifier">البريد الإلكتروني أو اسم المستخدم</Label>
                       <div className="relative">
                         <User className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
                           id="identifier"
                           type="text"
-                          placeholder="أدخل البريد الإلكتروني أو رقم الهاتف"
+                          placeholder="أدخل البريد الإلكتروني أو اسم المستخدم"
                           value={loginData.identifier}
                           onChange={(e) => setLoginData({...loginData, identifier: e.target.value})}
                           className="pr-10"
@@ -336,4 +351,3 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
 };
 
 export default AuthModal;
-

@@ -13,6 +13,11 @@ function App() {
   const [cartItems, setCartItems] = useState([]);
   const [user, setUser] = useState(null);
 
+  // <-- ★★★ الخطوة 1: إضافة دالة تسجيل الخروج ★★★
+  const handleLogout = () => {
+    setUser(null); // هذا يعيد المستخدم إلى حالة "غير مسجل دخوله"
+  };
+
   // بيانات المنتجات
   const products = [
     {
@@ -120,16 +125,24 @@ function App() {
                     {getTotalItems()}
                   </Badge>
                 )}
-              </Button>
-              
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => setIsAuthModalOpen(true)}
-              >
-                <User className="w-4 h-4 ml-2" />
-                {user ? user.username : 'تسجيل الدخول'}
-              </Button>
+              </Button> {/* <-- تم إغلاق زر السلة هنا بشكل صحيح */}
+
+              {/* ▼▼▼ الخطوة 2: إضافة المنطق الشرطي هنا ▼▼▼ */}
+              {user ? (
+                // إذا كان المستخدم موجودًا (مسجل دخوله)
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-700">{user.email}</span>
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
+                    تسجيل الخروج
+                  </Button>
+                </div>
+              ) : (
+                // إذا لم يكن المستخدم موجودًا
+                <Button variant="default" onClick={() => setIsAuthModalOpen(true)}>
+                  <User className="w-4 h-4 ml-2" />
+                  تسجيل الدخول
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -274,4 +287,3 @@ function App() {
 }
 
 export default App;
-
