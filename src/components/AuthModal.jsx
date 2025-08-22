@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// ★★★ استيراد العميل الذي أنشأناه ★★★
 import { supabase } from '../supabaseClient'; 
 import { Button } from '@/components/ui/button.jsx';
 import { Input } from '@/components/ui/input.jsx';
@@ -8,74 +7,64 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx';
 import { X, User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 
+// أيقونة Google SVG
+const GoogleIcon = (props) => (
+  <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <title>Google</title>
+    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.9-4.63 1.9-3.87 0-7-3.13-7-7s3.13-7 7-7c2.04 0 3.5.83 4.37 1.62l2.33-2.33C18.4.56 15.75 0 12.48 0 5.88 0 0 5.88 0 12.48s5.88 12.48 12.48 12.48c7.25 0 12.07-4.73 12.07-12.07 0-.81-.07-1.61-.2-2.39H12.48z"/>
+  </svg>
+ );
+
 const AuthModal = ({ isOpen, onClose, onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [loginData, setLoginData] = useState({
-    email: '',
-    password: ''
-  });
-  const [signupData, setSignupData] = useState({
-    email: '',
-    password: '',
-    username: '', 
-    phone: ''
-  });
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [signupData, setSignupData] = useState({ email: '', password: '', username: '', phone: '' });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  // ★★★ دالة تسجيل الدخول باستخدام Supabase ★★★
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
-
     const { data, error } = await supabase.auth.signInWithPassword({
       email: loginData.email,
       password: loginData.password,
     });
-
     if (error) {
       setErrors({ login: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' });
     } else if (data.user) {
       onLogin(data.user);
       onClose();
-      setLoginData({ email: '', password: '' });
     }
     setIsLoading(false);
   };
 
-  // ★★★ دالة إنشاء الحساب باستخدام Supabase ★★★
   const handleSignup = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
-
     const { data, error } = await supabase.auth.signUp({
       email: signupData.email,
       password: signupData.password,
-      options: {
-        data: { 
-          username: signupData.username,
-          phone: signupData.phone,
-        }
-      }
+      options: { data: { username: signupData.username, phone: signupData.phone } }
     });
-
     if (error) {
-      if (error.message.includes("User already registered")) {
-        setErrors({ signup: 'هذا البريد الإلكتروني مسجل بالفعل.' });
-      } else {
-        setErrors({ signup: 'حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.' });
-      }
+      setErrors({ signup: error.message.includes("User already registered") ? 'هذا البريد الإلكتروني مسجل بالفعل.' : 'حدث خطأ أثناء إنشاء الحساب.' });
     } else if (data.user) {
       alert('تم إنشاء حسابك بنجاح! سيتم تسجيل دخولك.');
       onLogin(data.user);
       onClose();
-      setSignupData({ email: '', password: '', username: '', phone: '' });
     }
     setIsLoading(false);
+  };
+
+  // ★★★ دالة تسجيل الدخول باستخدام Google ★★★
+  const handleGoogleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
   };
 
   return (
@@ -89,6 +78,24 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
         </div>
 
         <div className="p-6">
+          {/* ★★★ زر تسجيل الدخول باستخدام Google ★★★ */}
+          <Button variant="outline" className="w-full mb-4" onClick={handleGoogleLogin}>
+            <GoogleIcon className="w-4 h-4 ml-2" />
+            تسجيل الدخول باستخدام Google
+          </Button>
+
+          {/* ★★★ فاصل بصري ★★★ */}
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-muted-foreground">
+                أو أكمل باستخدام البريد الإلكتروني
+              </span>
+            </div>
+          </div>
+
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">تسجيل الدخول</TabsTrigger>
@@ -96,7 +103,7 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
             </TabsList>
 
             <TabsContent value="login">
-              <Card>
+              <Card className="border-0 shadow-none">
                 <CardHeader>
                   <CardTitle>تسجيل الدخول</CardTitle>
                   <CardDescription>أدخل بريدك الإلكتروني وكلمة المرور</CardDescription>
@@ -110,7 +117,6 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
                         <Input id="email-login" type="email" placeholder="أدخل بريدك الإلكتروني" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} className="pr-10" required />
                       </div>
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="password-login">كلمة المرور</Label>
                       <div className="relative">
@@ -121,7 +127,6 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
                         </Button>
                       </div>
                     </div>
-
                     {errors.login && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-md">{errors.login}</div>}
                     <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}</Button>
                   </form>
@@ -130,7 +135,7 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
             </TabsContent>
 
             <TabsContent value="signup">
-              <Card>
+              <Card className="border-0 shadow-none">
                 <CardHeader>
                   <CardTitle>إنشاء حساب جديد</CardTitle>
                   <CardDescription>املأ البيانات التالية لإنشاء حساب جديد</CardDescription>
@@ -144,7 +149,6 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
                         <Input id="username-signup" type="text" placeholder="أدخل اسم المستخدم" value={signupData.username} onChange={(e) => setSignupData({...signupData, username: e.target.value})} className="pr-10" />
                       </div>
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="email-signup">البريد الإلكتروني</Label>
                       <div className="relative">
@@ -152,7 +156,6 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
                         <Input id="email-signup" type="email" placeholder="أدخل البريد الإلكتروني" value={signupData.email} onChange={(e) => setSignupData({...signupData, email: e.target.value})} className="pr-10" required />
                       </div>
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="password-signup">كلمة المرور</Label>
                       <div className="relative">
@@ -163,7 +166,6 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
                         </Button>
                       </div>
                     </div>
-
                     {errors.signup && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-md">{errors.signup}</div>}
                     <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}</Button>
                   </form>
