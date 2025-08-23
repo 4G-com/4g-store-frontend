@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // ★★★ الخطوة 1: استيراد useEffect
+import { supabase } from './supabaseClient'; // ★★★ الخطوة 2: استيراد Supabase
 import { Button } from '@/components/ui/button.jsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
@@ -13,9 +14,34 @@ function App() {
   const [cartItems, setCartItems] = useState([]);
   const [user, setUser] = useState(null);
 
-  // <-- ★★★ الخطوة 1: إضافة دالة تسجيل الخروج ★★★
-  const handleLogout = () => {
-    setUser(null); // هذا يعيد المستخدم إلى حالة "غير مسجل دخوله"
+  // ★★★ الخطوة 3: إضافة مستمع المصادقة ★★★
+  useEffect(() => {
+    // جلب جلسة المستخدم الحالية عند تحميل التطبيق لأول مرة
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    };
+    getSession();
+
+    // الاستماع لأي تغيير في حالة المصادقة (تسجيل دخول، تسجيل خروج، إلخ)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      // إغلاق نافذة تسجيل الدخول إذا كانت مفتوحة بعد نجاح العملية
+      if (session?.user) {
+        setIsAuthModalOpen(false);
+      }
+    });
+
+    // إلغاء الاشتراك عند إغلاق المكون لتجنب تسرب الذاكرة
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
   };
 
   // بيانات المنتجات
@@ -125,11 +151,9 @@ function App() {
                     {getTotalItems()}
                   </Badge>
                 )}
-              </Button> {/* <-- تم إغلاق زر السلة هنا بشكل صحيح */}
+              </Button>
 
-              {/* ▼▼▼ الخطوة 2: إضافة المنطق الشرطي هنا ▼▼▼ */}
               {user ? (
-                // إذا كان المستخدم موجودًا (مسجل دخوله)
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-medium text-gray-700">{user.email}</span>
                   <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -137,7 +161,6 @@ function App() {
                   </Button>
                 </div>
               ) : (
-                // إذا لم يكن المستخدم موجودًا
                 <Button variant="default" onClick={() => setIsAuthModalOpen(true)}>
                   <User className="w-4 h-4 ml-2" />
                   تسجيل الدخول
@@ -271,7 +294,7 @@ function App() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        onLogin={setUser}
+        onLogin={setUser} // هذه الخاصية لم نعد نستخدمها مباشرة ولكن لا بأس من إبقائها
       />
       
       <CartModal
