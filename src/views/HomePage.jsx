@@ -8,8 +8,16 @@ import { ShoppingCart, Wifi, Phone, ArrowLeft, Zap, ShieldCheck, Code, MessageCi
 import CartModal from '../components/CartModal';
 import '../App.css';
 
-// --- بيانات المنتجات (تبقى كما هي) ---
+// --- ★★★ تم تحديث قائمة الباقات هنا ★★★ ---
 const internetPackages = [
+  // الباقات الجديدة
+  { id: 201, name: "باقة 400 ميجا", data: "400 MB", duration: "5 ساعات", validity: "يومين", price: 100 },
+  { id: 202, name: "باقة 1 جيجا", data: "1 GB", duration: "15 ساعة", validity: "4 أيام", price: 250 },
+  { id: 203, name: "باقة 2 جيجا", data: "2 GB", duration: "24 ساعة", validity: "7 أيام", price: 500 },
+  { id: 204, name: "باقة 4 جيجا", data: "4 GB", duration: "مفتوح", validity: "7 أيام", price: 1000 },
+  { id: 205, name: "باقة 13 جيجا", data: "13 GB", duration: "مفتوح", validity: "30 يوم", price: 3000 },
+  
+  // الباقات القديمة (يمكنك حذفها إذا أردت)
   { id: 101, name: "باقة 100 ميجا", data: "100 MB", duration: "24 ساعة", validity: "يوم", price: 500 },
   { id: 102, name: "باقة 500 ميجا", data: "500 MB", duration: "72 ساعة", validity: "3 أيام", price: 1500 },
   { id: 103, name: "باقة 1 جيجا", data: "1 GB", duration: "اسبوع", validity: "أسبوع", price: 2500 },
@@ -17,6 +25,7 @@ const internetPackages = [
   { id: 105, name: "باقة 10 جيجا", data: "10 GB", duration: "شهر", validity: "شهر", price: 8000 },
   { id: 106, name: "باقة يومين", data: "750 MB", duration: "48 ساعة", validity: "يومين", price: 2000 },
 ];
+
 const telecomCompanies = [
   { id: 'yemen-mobile', name: "يمن موبايل" },
   { id: 'sabafon', name: "سبأفون" },
@@ -29,7 +38,7 @@ const rechargeCards = {
   'you': [{ id: 501, name: "شحن YOU 200 ريال", price: 200 }, { id: 502, name: "شحن YOU 1200 ريال", price: 1200 }],
   'mtn': [{ id: 601, name: "شحن MTN 300 ريال", price: 300 }],
 };
-const validityFilters = ["الكل", "يوم", "يومين", "أسبوع", "شهر"];
+const validityFilters = ["الكل", "يوم", "يومين", "4 أيام", "7 أيام", "أسبوع", "30 يوم", "شهر"];
 
 
 const HomePage = () => {
@@ -95,6 +104,7 @@ const HomePage = () => {
                     <CardHeader><CardTitle className="text-slate-800">{pkg.name}</CardTitle></CardHeader>
                     <CardContent className="flex-grow space-y-3">
                       <p className="text-slate-600"><strong>حجم البيانات:</strong> {pkg.data}</p>
+                      <p className="text-slate-600"><strong>مدة الإتصال:</strong> {pkg.duration}</p>
                       <p className="text-slate-600"><strong>الصلاحية:</strong> {pkg.validity}</p>
                       <p className="text-2xl font-bold text-emerald-600">{pkg.price.toLocaleString()} ريال</p>
                     </CardContent>
@@ -172,7 +182,7 @@ const HomePage = () => {
             </div>
         </section>
 
-        {/* ★★★ قسم التحليلات المصغر والأفقي ★★★ */}
+        {/* قسم التحليلات المصغر والأفقي */}
         <div className="bg-slate-50 py-8">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
@@ -238,7 +248,7 @@ const HomePage = () => {
       
       <main>{renderContent()}</main>
 
-      {/* ★★★ القائمة السفلية الجديدة والمعدلة ★★★ */}
+      {/* القائمة السفلية الجديدة والمعدلة */}
       <footer className="bg-slate-800 text-slate-300 pt-12 pb-8">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
